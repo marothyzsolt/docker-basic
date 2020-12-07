@@ -1,0 +1,67 @@
+version: '3.5'
+services:
+
+  # PHP Service
+  app:
+    image: noxus.adroitgroup.io:5000/base/php7.3
+    container_name: ${ENV}_${NAME}_app
+    restart: always
+    volumes:
+    #  - ./docker/app/entrypoint.sh:/scripts/entrypoint.sh
+      - ./:/var/www
+    depends_on:
+      - mysql
+    networks:
+      - default
+
+  # Nginx Service
+  nginx:
+    container_name: ${ENV}_${NAME}_nginx
+    restart: always
+    image: noxus.adroitgroup.io:5000/base/nginx:latest
+    volumes:
+      - ./docker/logs/nginx/:/var/log/nginx/
+      - ./:/var/www
+    depends_on:
+      - mysql
+    networks:
+      - default
+      - proxynet
+
+
+  # MySQL Service
+  mysql:
+    image: mysql:5.7.22
+    container_name: ${ENV}_${NAME}_mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: $DB_ROOT_PASSWORD
+      MYSQL_DATABASE: $DB_DATABASE
+      MYSQL_USER: $DB_USER
+      MYSQL_PASSWORD: $DB_PASSWORD
+    volumes:
+      - ./docker/mysql/data:/var/lib/mysql/
+      
+  # Node NPM
+  node:
+    image: noxus.adroitgroup.io:5000/base/node-base
+    container_name: ${ENV}_${NAME}_node
+    volumes:
+      - ./:/app
+
+  # PHPMyAdmin
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: ${ENV}_${NAME}_phpmyadmin
+    restart: always
+    ports:
+      - "50000:80"
+    environment:
+      - PMA_PORT=3306
+      - PMA_HOST=mysql
+    depends_on:
+      - mysql
+
+networks:
+  proxynet:
+    name: proxy_network
