@@ -1,0 +1,22 @@
+version: '3.5'
+
+services:
+  reverse:
+    container_name: reverse
+    hostname: reverse
+    image: noxus.adroitgroup.io:5000/base/nginx:latest
+    restart: always
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ./config/:/etc/nginx/conf.d
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    networks:
+      - proxynet
+
+
+networks:
+  proxynet:
+    name: proxy_network
+
